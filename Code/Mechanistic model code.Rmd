@@ -1,7 +1,7 @@
 ---
 title: "Mechanistic Model Usage"
 author: "Kayla Zhang, Damie Pak, Megan Greischar"
-date: "2025-07-01"
+date: "2025-10-14"
 output:
   bookdown::pdf_document2:
     toc: no
@@ -278,6 +278,14 @@ data.highreplication.cap <- desolve_function(tstep=10^-4,
                              k=7, r=200,
                              model=within.host.model.cap, id=10^4) 
 
+# Adjust time display to sensible numbers
+data.lowreplication.nocap$time <- data.lowreplication.nocap$time * 10
+data.highreplication.nocap$time <- data.highreplication.nocap$time * 10
+data.lowreplication.satimm$time <- data.lowreplication.satimm$time * 10
+data.highreplication.satimm$time <- data.highreplication.satimm$time * 10
+data.lowreplication.cap$time <- data.lowreplication.cap$time * 10
+data.highreplication.cap$time <- data.highreplication.cap$time * 10
+
 
 path.symp.thresh <- 10^6
 immune.sympthresh <- 10
@@ -294,7 +302,7 @@ cex_labels <- 0.9
                          data = data.lowreplication.nocap, 
                          cex = cex, 
                          label = "Asymptomatic", 
-                         xlimlow = 0, xlimhigh = 0.25, 
+                         xlimlow = 0, xlimhigh = 2.5, 
                          s.compartment = 'pathogen')
   
   mtext(text="SLOW REPLICATION", font=2, side=3, line=2.5, cex=cex_labels)
@@ -306,7 +314,7 @@ cex_labels <- 0.9
                          data = data.highreplication.nocap, 
                          cex = cex, 
                          label = "Post-symptomatic", 
-                         xlimlow = 0, xlimhigh = 0.05, 
+                         xlimlow = 0, xlimhigh = 0.5, 
                          s.compartment = 'pathogen')
   
   mtext('Pathogen symptom threshold', side=4, line=2, cex=0.9)
@@ -326,7 +334,7 @@ cex_labels <- 0.9
                          data = data.lowreplication.nocap, 
                          cex = cex, 
                          label = "Pre-symptomatic", 
-                         xlimlow = 0, xlimhigh = 0.25, 
+                         xlimlow = 0, xlimhigh = 2.5, 
                          s.compartment = 'immune')
   
   mtext("Abundance", side=2, line=1, outer=TRUE, adj = 0.5075, cex=0.9)
@@ -338,7 +346,7 @@ cex_labels <- 0.9
                          data = data.highreplication.nocap, 
                          cex = cex, 
                          label = "Post-symptomatic", 
-                         xlimlow = 0, xlimhigh = 0.05, 
+                         xlimlow = 0, xlimhigh = 0.5, 
                          s.compartment = 'immune')
   
   plot.model.simulations(symp.thresh = satimm.sympthresh,
@@ -364,7 +372,7 @@ cex_labels <- 0.9
                          data = data.lowreplication.cap, 
                          cex = cex, 
                          label = "Post-symptomatic",
-                         xlimlow = 0, xlimhigh = 0.2, 
+                         xlimlow = 0, xlimhigh = 02, 
                          s.compartment = 'immune')
   
   mtext(text="D. Pathogen carrying capacity", 
@@ -374,10 +382,9 @@ cex_labels <- 0.9
                          data = data.highreplication.cap, 
                          cex = cex, 
                          label = "Pre-symptomatic", 
-                         xlimlow = 0, xlimhigh = 0.08, 
+                         xlimlow = 0, xlimhigh = 0.8, 
                          s.compartment = 'immune')
   
-
   mtext("Time", side=1, line=-1, outer=TRUE, adj=0.48, cex=0.9)
 }
 ```
@@ -396,6 +403,26 @@ get.delays.df <- function(data, param.vals, symp.thresh) {
                symp.thresh=symp.thresh))) 
   
   return(delays.df)
+}
+
+get.peak.imm <- function(data) {
+  
+  peak <- peak.pathogenloadtime(data)
+  
+  imm.at.peak <- data[data$time==peak,]$immune
+  
+  return(imm.at.peak)
+  
+}
+
+get.peak.imm.df <- function(data, param.vals) {
+  
+  peaks <- do.call(rbind, lapply(param.vals, function(x) 
+    data.frame(r=x,
+               imm.at.peak=get.peak.imm(data[data$r==x,])))) 
+  
+  return(peaks)
+  
 }
 
 r_vals <- seq(10, 250, by=10)
@@ -463,6 +490,9 @@ delays.byr.medsympthresh.cap <- get.delays.df(data=varyingr.cap,
 delays.byr.highsympthresh.cap <- get.delays.df(data=varyingr.cap, 
                                           param.vals=r_vals,
                                           symp.thresh=4)
+
+immpeak.byr.base <- get.peak.imm.df(data=varyingr.nocap, 
+                                                  r_vals)
 
 plot.varyingr <- function(delaysbyr1, delaysbyr2, delaysbyr3, 
                           highlighted_points, size, ylow, yhigh,
@@ -666,9 +696,10 @@ at different replication rates.
   mtext("C) Pathogen carrying capacity", side=3, line=1.5, cex=cex.mtext)
   
   legend(90, 0.15, legend=c('Symptom onset',
-                             'Pathogen pathogen load'), 
+                             'Pathogen load'), 
          lty=c(2, 1), col=c("red", "black"), bty="n")
   
   mtext("Replication rate (r)", side=1, line=2.5, cex=cex.mtext)
 }
+
 ```
