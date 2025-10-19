@@ -1,7 +1,7 @@
 ---
 title: "CHI Trial Literature Review"
 author: "Kayla Zhang, Damie Pak, Megan Greischar"
-date: "2024-07-01"
+date: "2025-10-19"
 output:
   bookdown::pdf_document2:
     toc: no
@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warnings = FALSE)
 
 ```{r}
 library(here)
+library(dplyr)
 ```
 
 Here we combine shedding and symptom onset data from the CHI trials we 
@@ -110,5 +111,51 @@ labels.right <- c("Norovirus", "RSV", "SARS-CoV-2")
 }
 ```
 
+We also plot the number of studies that matched our inclusion criteria over the
+year of publication.
+```{r}
+studies_per_year <- chidata %>% group_by(year) %>% 
+  summarize(count=n()) 
+
+spy_model <- lm(log(count) ~ year,
+                data=studies_per_year)
+
+tiff('Studies per year.tiff', res=500, height=3.5, width=3.5, unit='in')
+
+{
+  plot(count ~ year, data=studies_per_year, bty='n', 
+       xaxt='n', xlab='', yaxt='n', ylab='',
+       las=2)
+  
+  lines(studies_per_year$year,
+        exp(predict(spy_model, 
+                data.frame(year=studies_per_year$year))),
+        col='red')
+  
+  text(2016, 3.5, paste('p value: ', round(summary(spy_model)$coefficients[2, 4],
+                                           4)),
+       col='red')
+  
+  axis(1, at=seq(min(studies_per_year$year),
+                 max(studies_per_year$year),
+                 by=1), labels=FALSE,
+       mgp=c(0, 0.4, 0), tck=-0.02, las=2)
+  
+  text(x = seq(min(studies_per_year$year),
+         max(studies_per_year$year), by=4),
+       y = par("usr")[3] - 0.75,
+       xpd = NA,
+       labels = seq(min(studies_per_year$year),
+         max(studies_per_year$year), by=4),
+       srt=45)
+  
+  mtext('Year of publication', side=1, line=2.5)
+  
+  axis(2, mgp=c(0, 0.4, 0), tck=-0.02, las=2)
+  
+  mtext('Number of studies included\n in literature review', side=2, line=1.5)
+}
+dev.off()
+```
 
 
