@@ -1,7 +1,7 @@
 ---
 title: "Mechanistic Model Usage"
 author: "Kayla Zhang, Damie Pak, Megan Greischar"
-date: "2025-10-14"
+date: "2025-10-20
 output:
   bookdown::pdf_document2:
     toc: no
@@ -148,15 +148,6 @@ symptom.onset <- function(df, s.compartment, thresh) {
   }
 }
 
-symptom.end <- function(df, s.compartment, thresh) {
-  symptomatic <- df[which(df[s.compartment] >= thresh),]$time
-  if(length(symptomatic) > 0) {
-    return(max(symptomatic))
-  } else {
-    return(NA)
-  }
-}
-
 delay.calculation <- function(df, symp.thresh) {
   return(peak.pathogenloadtime(df) - symptom.onset(df, 'immune', symp.thresh))
 }
@@ -187,7 +178,7 @@ plot.model.simulations <- function(symp.thresh, data,
                                     cex, label,
                                     xlimlow, xlimhigh, s.compartment) {
   
-  col <- 'red'
+  col <- ifelse(s.compartment=='pathogen', 'red', 'blue')
   
   time <- data$time
   path.load <- data$pathogen
@@ -200,7 +191,7 @@ plot.model.simulations <- function(symp.thresh, data,
          yaxt='n', tck=-0.04, type="l", lwd=3, bty='l')
     lines(time, immune, col=gray(0.25), type="l", lty=2)
     points(peak.load.time, path.load[which(time==peak.load.time,)],
-         cex=1.5, pch=16, col="red")
+         cex=1.5, pch=16, col=col)
     points(peak.load.time, immune[which(time==peak.load.time,)],
          col=gray(0.25), cex=1.5, pch = 21, bg = "white")
     axis(2, cex.axis=cex, at=10^(seq(-1, 9, by=2)), 
@@ -216,7 +207,7 @@ plot.model.simulations <- function(symp.thresh, data,
          yaxt='n', lty = 2, tck = -0.04, type="l", lwd=3, bty='l')
     lines(time, path.load, col=gray(0.25), type="l")
     points(peak.load.time, immune[which(time==peak.load.time,)],
-         cex=1.5, pch = 21, col = "red", bg = "white")
+         cex=1.5, pch = 21, col = col, bg = "white")
     points(peak.load.time, path.load[which(time==peak.load.time,)],
          col=gray(0.25), pch=16, cex=1.5)
     axis(2, cex.axis=cex, at=10^(seq(-1, 9, by=2)), 
@@ -230,18 +221,14 @@ plot.model.simulations <- function(symp.thresh, data,
   
   abline(h=symp.thresh, lty=3, col=col, lwd=2)
   
-  polygon(x=c(symptom.onset(data, 
+  polygon(x=c(0,
+              0,
+              symptom.onset(data, 
                             s.compartment,
                             symp.thresh), 
               symptom.onset(data, 
                             s.compartment,
-                            symp.thresh),
-              symptom.end(data,
-                          s.compartment,
-                          symp.thresh),
-              symptom.end(data,
-                          s.compartment,
-                          symp.thresh)), 
+                            symp.thresh)), 
           y=10^c(-5, 10, 10, -5), 
           col=rgb(200, 200, 200, alpha=100,
                   maxColorValue=255),
@@ -279,13 +266,12 @@ data.highreplication.cap <- desolve_function(tstep=10^-4,
                              model=within.host.model.cap, id=10^4) 
 
 # Adjust time display to sensible numbers
-data.lowreplication.nocap$time <- data.lowreplication.nocap$time * 10
-data.highreplication.nocap$time <- data.highreplication.nocap$time * 10
-data.lowreplication.satimm$time <- data.lowreplication.satimm$time * 10
-data.highreplication.satimm$time <- data.highreplication.satimm$time * 10
-data.lowreplication.cap$time <- data.lowreplication.cap$time * 10
-data.highreplication.cap$time <- data.highreplication.cap$time * 10
-
+data.lowreplication.nocap$time <- data.lowreplication.nocap$time * 7
+data.highreplication.nocap$time <- data.highreplication.nocap$time * 7
+data.lowreplication.satimm$time <- data.lowreplication.satimm$time * 7
+data.highreplication.satimm$time <- data.highreplication.satimm$time * 7
+data.lowreplication.cap$time <- data.lowreplication.cap$time * 7
+data.highreplication.cap$time <- data.highreplication.cap$time * 7
 
 path.symp.thresh <- 10^6
 immune.sympthresh <- 10
@@ -302,7 +288,7 @@ cex_labels <- 0.9
                          data = data.lowreplication.nocap, 
                          cex = cex, 
                          label = "Asymptomatic", 
-                         xlimlow = 0, xlimhigh = 2.5, 
+                         xlimlow = 0, xlimhigh = 2, 
                          s.compartment = 'pathogen')
   
   mtext(text="SLOW REPLICATION", font=2, side=3, line=2.5, cex=cex_labels)
@@ -314,19 +300,10 @@ cex_labels <- 0.9
                          data = data.highreplication.nocap, 
                          cex = cex, 
                          label = "Post-symptomatic", 
-                         xlimlow = 0, xlimhigh = 0.5, 
+                         xlimlow = 0, xlimhigh = 0.4, 
                          s.compartment = 'pathogen')
   
   mtext('Pathogen symptom threshold', side=4, line=2, cex=0.9)
-  
-  legend(0.002, 10^5, legend=c('Peak pathogen load', 
-                             'No symp/symp',
-                             'Symptom threshold',
-                             'Immune effector', 
-                             'Pathogen'
-                           ), 
-         lty=c(NA, NA, 3, 2, 1), pch=c(16, NA, NA, NA, NA), bty="n",
-         xpd=TRUE, cex=0.9)
   
   mtext(text="FAST REPLICATION", font=2, side=3, line=2.5, cex=cex_labels)
   
@@ -334,7 +311,7 @@ cex_labels <- 0.9
                          data = data.lowreplication.nocap, 
                          cex = cex, 
                          label = "Pre-symptomatic", 
-                         xlimlow = 0, xlimhigh = 2.5, 
+                         xlimlow = 0, xlimhigh = 2, 
                          s.compartment = 'immune')
   
   mtext("Abundance", side=2, line=1, outer=TRUE, adj = 0.5075, cex=0.9)
@@ -346,14 +323,14 @@ cex_labels <- 0.9
                          data = data.highreplication.nocap, 
                          cex = cex, 
                          label = "Post-symptomatic", 
-                         xlimlow = 0, xlimhigh = 0.5, 
+                         xlimlow = 0, xlimhigh = 0.4, 
                          s.compartment = 'immune')
   
   plot.model.simulations(symp.thresh = satimm.sympthresh,
                          data = data.lowreplication.satimm, 
                          cex = cex, 
                          label = "Pre-symptomatic", 
-                         xlimlow = 0, xlimhigh = 1, 
+                         xlimlow = 0, xlimhigh = 7, 
                          s.compartment = 'immune')
   
   mtext(text="C. Immune inhibition of pathogen replication", 
@@ -363,7 +340,7 @@ cex_labels <- 0.9
                          data = data.highreplication.satimm, 
                          cex = cex, 
                          label = "Post-symptomatic", 
-                         xlimlow = 0, xlimhigh = 1, 
+                         xlimlow = 0, xlimhigh = 7, 
                          s.compartment = 'immune')
   
   mtext('Immune effector symptom threshold', side=4, line=2, cex=0.9)
@@ -372,7 +349,7 @@ cex_labels <- 0.9
                          data = data.lowreplication.cap, 
                          cex = cex, 
                          label = "Post-symptomatic",
-                         xlimlow = 0, xlimhigh = 02, 
+                         xlimlow = 0, xlimhigh = 2, 
                          s.compartment = 'immune')
   
   mtext(text="D. Pathogen carrying capacity", 
@@ -385,7 +362,16 @@ cex_labels <- 0.9
                          xlimlow = 0, xlimhigh = 0.8, 
                          s.compartment = 'immune')
   
-  mtext("Time", side=1, line=-1, outer=TRUE, adj=0.48, cex=0.9)
+  legend(0.4, 10^10, legend=c('Peak pathogen load', 
+                             'No symp/symp',
+                             'Symptom threshold',
+                             'Immune effector', 
+                             'Pathogen'
+                           ), 
+         lty=c(NA, NA, 3, 2, 1), pch=c(16, NA, NA, NA, NA), bty="n",
+         xpd=TRUE, cex=0.9, col=c('black', NA, 'black', 'blue', 'red'))
+  
+  mtext("Time (weeks)", side=1, line=-1, outer=TRUE, adj=0.48, cex=0.9)
 }
 ```
 
