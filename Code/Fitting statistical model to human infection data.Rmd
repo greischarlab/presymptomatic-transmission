@@ -118,6 +118,8 @@ extract.incubation <- function(symp.data) {
 }
 
 sars.TShedData <- read_pzfx(here("data", "SARS-Supp-2.pzfx"), table=37)[, c(1, 20:37)]
+# Correcting Throat_17's data from an accident in the pzfx file
+sars.TShedData$Throat_17 <- read_pzfx(here("data", "SARS-Supp-2.pzfx"), table=2)$Throat
 sars.TShedData <- melt(as.data.table(sars.TShedData), id.vars=c("Day"), 
                        variable.name = "ID", value.name = "y_virus", 
                        variable.factor = F)
@@ -208,14 +210,14 @@ define the endpoint as the length of the shedding time series.
 ```{r, results='hide'}
 whichLower <- function(index, vec){
   return(all(vec[(index+1):length(vec)] > vec[index]))
-  }
+}
 
 end.point <- function(data) {
   # endPt is defined as the length of the full viral abundance time series
     # which is replaced by the following in order (if defined):
     # 1. the first value below the detection threshold after the max. detected abundance
        # if such a value exists
-    # 2. any value in prior to the endPt defined by (1) for which all subsequent values were greater
+    # 2. any value prior to the endPt defined by (1) for which all subsequent values were greater
     # 3. as the local minimum (defined as a timepoint with a negative derivative two points prior,
        # and a positive derivative two points following) if such a value occurs earlier than the
        # endPt defined in (2)
@@ -241,19 +243,26 @@ end.point <- function(data) {
   remainingNonmissing <- which(is.finite(data$y_virus[1:endPt]))
   minBeforeEnd <- sapply(1:length(remainingNonmissing), whichLower,
                         vec = data$y_virus[remainingNonmissing])
-  if(any(minBeforeEnd)){
-    if(any(remainingNonmissing[which(minBeforeEnd)]>maxViralAbundance)){
-      endPt <- min(remainingNonmissing[minBeforeEnd])
-      }
-    }
+  
+  if(any(minBeforeEnd) && any(remainingNonmissing[minBeforeEnd] > maxViralAbundance)){
+    mins <- remainingNonmissing[minBeforeEnd]
+    endPt <- min(mins[mins > maxViralAbundance])
+  }
 
   # 3. check for earlier end of infection wave
     # defined as a local minimum with a derivative going from negative
     # to positive twice on either side
-  if(endPt>=5){
-    earlyLocalMinTest <- sapply(3:(endPt-2), function(x) all(sign(diff(data$y_virus[max(c(1, x-2)):min(c(endPt,(x+2)))]))==c(-1,-1,1,1)))
+  if(endPt>=5 && endPt>maxViralAbundance+1){
+    earlyLocalMinTest <- sapply(max(3, maxViralAbundance+1):(endPt-2), function(x) {
+      left <- data$y_virus[max(c(1, x-2)):(x-1)]
+      right <- data$y_virus[(x+1):(x+2)]
+      
+      all(left > data$y_virus[x]) && all(right > data$y_virus[x])
+      
+    })
+    
   if(any(earlyLocalMinTest,na.rm=T)){
-    endPt <- which(earlyLocalMinTest)+2
+    endPt <- min(which(earlyLocalMinTest))+max(2, maxViralAbundance)
     }
   }
 
@@ -1195,7 +1204,7 @@ plot.viralload <- function(data, pars, sympdata, t.range, cex=1,
   if ('y_type' %in% colnames(data)) {
     undetectable.indexes <- which(grepl('NEG', data$y_type))
   } else {
-    undetectable.indexes <- which(is.na(data$yvals) & data$days > 0)
+    undetectable.indexes <- which(is.na(yvals) & data$days > 0)
   }
   lines.x_vals <- lapply(undetectable.indexes, function(x) c(data[x,]$days - 0.25, 
                                                           data[x,]$days + 0.25))
@@ -1221,9 +1230,6 @@ plot.viralload <- function(data, pars, sympdata, t.range, cex=1,
     t.peak <- sse.viralLoad(pars, data[1:t.range$endPt,], optimization = NA)[3]/24
     peakHeight <- sse.viralLoad(pars, data[1:t.range$endPt,], optimization = NA)[1]
     
-    points(t.peak, peakHeight, pch=redpointstyle,
-           col="red", lwd=cex, cex=cex)
-    
     if (is.na(symp.onset)) {
       redpointstyle <- NA
     } else if (t.peak < symp.onset) {
@@ -1231,6 +1237,10 @@ plot.viralload <- function(data, pars, sympdata, t.range, cex=1,
     } else {
       redpointstyle <- 1
     }
+    
+    points(t.peak, peakHeight, pch=redpointstyle,
+           col="red", lwd=cex, cex=cex)
+    
   }
   
   if (!example) {
@@ -1295,6 +1305,7 @@ noro.color <- "#871a6e"
 sars.pch <- 5
 noro.pch <- 2
 
+tiff('Norovirus trajectories (test).tiff', res=500, width=6.5, height=6.5, unit='in')
 {
   par(mfrow=c(6, 3), mai=c(0.22, 0.42, 0.22, 0.22), oma=c(3.5, 4, 0, 0),
       mar=c(1, 2.1, 1, 1))
@@ -1388,6 +1399,9 @@ noro.pch <- 2
   legend("bottom", legend=c("Ge et al., 2023 fits", "Our fits"), lty=c(3, 1),
          col=c("#22a841", noro.color), bty='n')
 }
+dev.off()
+
+tiff('SARS-CoV-2 trajectories (test).tiff', res=500, width=6.5, height=6.5, unit='in')
 
 par(mfrow=c(6, 3), mai=c(0.22, 0.42, 0.22, 0.22), oma=c(3.5, 4, 0, 0),
     mar=c(1, 2.1, 1, 1))
@@ -1464,6 +1478,7 @@ for(i in 1:length(sarsParticipants)) {
     panellabel=plab)
   }
 }
+dev.off()
 ```
 
 We give 2 examples of how we calculated average shedding prior to symptoms for
