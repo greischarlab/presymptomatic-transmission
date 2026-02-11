@@ -196,7 +196,7 @@ plot.model.simulations <- function(symp.thresh, data,
   
   if (s.compartment == 'pathogen') {
     plot(time, path.load, col=col, xlab="", ylab="", xlim=c(xlimlow, xlimhigh), log='y',
-         ylim=10^c(-1, 9), cex.lab=cex, cex.axis=cex, mgp=c(0, 1, 0), 
+         ylim=10^c(-1, 10), cex.lab=cex, cex.axis=cex, mgp=c(0, 1, 0), 
          yaxt='n', tck=-0.04, type="l", lwd=3, bty='l')
     points(peak.load.time, path.load[which(time==peak.load.time,)],
          cex=1.5, pch=16, col=col)
@@ -210,7 +210,7 @@ plot.model.simulations <- function(symp.thresh, data,
               expression(10^9)), las=2, mgp=c(0, 1, 0))
   } else {
     plot(time, immune, col=col, xlab="", ylab="", xlim=c(xlimlow, xlimhigh), log='y',
-         ylim=10^c(-1, 9), cex.lab=cex, cex.axis=cex, mgp=c(0, 1, 0), 
+         ylim=10^c(-1, 10), cex.lab=cex, cex.axis=cex, mgp=c(0, 1, 0), 
          yaxt='n', lty = 2, tck = -0.04, type="l", lwd=3, bty='l')
     points(peak.load.time, path.load[which(time==peak.load.time,)],
          cex=1.5, pch=16)
@@ -243,44 +243,43 @@ plot.model.simulations <- function(symp.thresh, data,
                   maxColorValue=255),
           border = NA)
   
-  text(0.01 * (xlimhigh - xlimlow) + xlimlow, 10^(.95 * (9)) + 10^-1, 
+  text(0.01 * (xlimhigh - xlimlow) + xlimlow, 10^(.95 * (9.5)) + 10^-1, 
        labels=label, cex=cex, adj=0)
 }
 
-lowrep.nocap <- 20
-highrep.nocap <- 200
+path.symp.thresh <- 10^6
+immune.sympthresh <- 15
+satimm.sympthresh <- 90
+immune.pathcap.sympthresh <- 2
 
-lowrep.satimm <- 30
-highrep.satimm <- 200
-
-lowrep.cap <- 10
-highrep.cap <- 100
+lowrep <- 30
+highrep <- 300
 
 data.lowreplication.nocap <- desolve_function(tstep=10^-4, 
                             k=3.5, 
-                            r=lowrep.nocap,
+                            r=lowrep,
                             model=within.host.model, 
                             id=10^4)
 data.highreplication.nocap <- desolve_function(tstep=10^-4, 
                              k=3.5, 
-                             r=highrep.nocap,
+                             r=highrep,
                              model=within.host.model, id=10^4) 
 
 data.lowreplication.satimm <- desolve_function.satimm(tstep=10^-4,
-                                                            r=lowrep.satimm,
+                                                            r=lowrep,
                                                             model=sat.imm.model,
                                                             id=10^4)
 
 data.highreplication.satimm <- desolve_function.satimm(tstep=10^-4,
-                                                            r=highrep.satimm,
+                                                            r=highrep,
                                                             model=sat.imm.model,
                                                             id=10^4)
 
 data.lowreplication.cap <- desolve_function(tstep=10^-4, 
-                            k=7, r=lowrep.cap,
+                            k=7, r=lowrep,
                             model=within.host.model.cap, id=10^4)
 data.highreplication.cap <- desolve_function(tstep=10^-4, 
-                             k=7, r=highrep.cap,
+                             k=7, r=highrep,
                              model=within.host.model.cap, id=10^4) 
 
 # Adjust time display to sensible numbers
@@ -290,11 +289,6 @@ data.lowreplication.satimm$time <- data.lowreplication.satimm$time * 7
 data.highreplication.satimm$time <- data.highreplication.satimm$time * 7
 data.lowreplication.cap$time <- data.lowreplication.cap$time * 7
 data.highreplication.cap$time <- data.highreplication.cap$time * 7
-
-path.symp.thresh <- 10^6
-immune.sympthresh <- 10
-satimm.sympthresh <- 70
-immune.pathcap.sympthresh <- 3
 
 cex <- 1.25
 cex_labels <- 0.9
@@ -319,7 +313,7 @@ tiff('Model schematics.tiff', res=500, width=6.5, height=7.5, unit='in')
                          data = data.highreplication.nocap, 
                          cex = cex, 
                          label = "Post-symptomatic", 
-                         xlimlow = 0, xlimhigh = 0.4, 
+                         xlimlow = 0, xlimhigh = 0.3, 
                          s.compartment = 'pathogen')
   
   mtext('Pathogen symptom threshold', side=4, line=2, cex=0.9, col='blue')
@@ -373,14 +367,14 @@ tiff('Model schematics.tiff', res=500, width=6.5, height=7.5, unit='in')
                          data = data.highreplication.nocap, 
                          cex = cex, 
                          label = "Post-symptomatic", 
-                         xlimlow = 0, xlimhigh = 0.4, 
+                         xlimlow = 0, xlimhigh = 0.3, 
                          s.compartment = 'immune')
   
   plot.model.simulations(symp.thresh = satimm.sympthresh,
                          data = data.lowreplication.satimm, 
                          cex = cex, 
                          label = "Pre-symptomatic", 
-                         xlimlow = 0, xlimhigh = 4, 
+                         xlimlow = 0, xlimhigh = 8, 
                          s.compartment = 'immune')
   
   mtext(text="C. Immune inhibition of pathogen replication", 
@@ -399,7 +393,7 @@ tiff('Model schematics.tiff', res=500, width=6.5, height=7.5, unit='in')
                          data = data.lowreplication.cap, 
                          cex = cex, 
                          label = "Post-symptomatic",
-                         xlimlow = 0, xlimhigh = 4, 
+                         xlimlow = 0, xlimhigh = 3, 
                          s.compartment = 'immune')
   
   mtext(text="D. Pathogen carrying capacity", 
@@ -463,7 +457,7 @@ get.peak.imm.df <- function(data, param.vals) {
   
 }
 
-r_vals <- seq(10, 250, by=10)
+r_vals <- seq(10, 300, by=10)
 
 varyingr.nocap <- data.frame(k=3.5, r=r_vals, dose=10^4)
 
@@ -495,39 +489,39 @@ varyingr.cap <- do.call(rbind, mapply(desolve_function,
 
 delays.byr.lowsympthresh.nocap <- get.delays.df(data=varyingr.nocap, 
                                           param.vals=r_vals,
-                                          symp.thresh=5)
+                                          symp.thresh=10)
 
 delays.byr.medsympthresh.nocap <- get.delays.df(data=varyingr.nocap, 
                                           param.vals=r_vals,
-                                          symp.thresh=10)
+                                          symp.thresh=15)
 
 delays.byr.highsympthresh.nocap <- get.delays.df(data=varyingr.nocap, 
                                           param.vals=r_vals,
-                                          symp.thresh=15)
+                                          symp.thresh=20)
 
 delays.byr.lowsympthresh.satimm <- get.delays.df(data=varyingr.satimm, 
                                           param.vals=r_vals,
-                                          symp.thresh=50)
+                                          symp.thresh=70)
 
 delays.byr.medsympthresh.satimm <- get.delays.df(data=varyingr.satimm, 
                                           param.vals=r_vals,
-                                          symp.thresh=70)
+                                          symp.thresh=90)
 
 delays.byr.highsympthresh.satimm <- get.delays.df(data=varyingr.satimm, 
                                           param.vals=r_vals,
-                                          symp.thresh=90)
+                                          symp.thresh=110)
 
 delays.byr.lowsympthresh.cap <- get.delays.df(data=varyingr.cap, 
                                           param.vals=r_vals,
-                                          symp.thresh=2)
+                                          symp.thresh=1)
 
 delays.byr.medsympthresh.cap <- get.delays.df(data=varyingr.cap, 
                                           param.vals=r_vals,
-                                          symp.thresh=3)
+                                          symp.thresh=2)
 
 delays.byr.highsympthresh.cap <- get.delays.df(data=varyingr.cap, 
                                           param.vals=r_vals,
-                                          symp.thresh=4)
+                                          symp.thresh=3)
 
 immpeak.byr.base <- get.peak.imm.df(data=varyingr.nocap, 
                                                   r_vals)
@@ -563,85 +557,85 @@ plot.varyingr <- function(delaysbyr1, delaysbyr2, delaysbyr3,
 
 cols <- colorRampPalette(c("deepskyblue", "deepskyblue4"))(3)
 
-tiff('Delays varying r.tiff', res=500, width=3.5, height=6.5, unit='in')
+tiff('Delays varying r.tiff', res=500, width=3.5, height=5.5, unit='in')
 {plot.varyingr.nocap <- plot.varyingr(delays.byr.lowsympthresh.nocap, 
               delays.byr.medsympthresh.nocap, 
               delays.byr.highsympthresh.nocap, 
               highlighted_points=delays.byr.medsympthresh.nocap
-              [delays.byr.medsympthresh.nocap$r==lowrep.nocap | 
-                  delays.byr.medsympthresh.nocap$r==highrep.nocap,],
-              size=6, 
+              [delays.byr.medsympthresh.nocap$r==lowrep | 
+                  delays.byr.medsympthresh.nocap$r==highrep,],
+              size=8.5, 
               ylow=-.06, 
               yhigh=.005, 
               xlow=0, 
-              xhigh=350,
-              legendposx=0.85,
-              legendposy=0.25) + 
+              xhigh=400,
+              legendposx=0.8,
+              legendposy=0.3) + 
   ggtitle("A) Base model") + 
   xlab("") +
   ylab("") +
-  geom_text(aes(x=315, y=-0.002, label = "Pre-symptomatic"),
-                color="black", size=2) +
-  geom_text(aes(x=315, y=0.002, label = "Post-symptomatic"),
-                color="black", size=2) +
-  scale_color_manual(name="Symptom Threshold", values = c("5"= cols[1], 
-                                                          "10"= cols[2], 
-                                                          "15"= cols[3]),
-                     limits=c("5", "10", "15"))
+  geom_text(aes(x=360, y=-0.003, label = "Pre-symptomatic"),
+                color="black", size=2.25) +
+  geom_text(aes(x=360, y=0.0035, label = "Post-symptomatic"),
+                color="black", size=2.25) +
+  scale_color_manual(name="Symptom Threshold", values = c("10"= cols[1], 
+                                                          "15"= cols[2], 
+                                                          "20"= cols[3]),
+                     limits=c("10", "15", "20"))
   
 plot.varyingr.satimm <- plot.varyingr(delays.byr.lowsympthresh.satimm, 
               delays.byr.medsympthresh.satimm, 
               delays.byr.highsympthresh.satimm, 
               highlighted_points=delays.byr.medsympthresh.satimm
-              [delays.byr.medsympthresh.satimm$r==lowrep.satimm | 
-                  delays.byr.medsympthresh.satimm$r==highrep.satimm,],
-              size=6,
-              ylow=-.25, 
-              yhigh=0.13, 
+              [delays.byr.medsympthresh.satimm$r==lowrep | 
+                  delays.byr.medsympthresh.satimm$r==highrep,],
+              size=8.5,
+              ylow=-.45, 
+              yhigh=0.15, 
               xlow=0, 
-              xhigh=350,
-              legendposx=0.85,
-              legendposy=0.25) + 
+              xhigh=400,
+              legendposx=0.8,
+              legendposy=0.3) + 
   ggtitle("B) Immune inhibition of pathogen replication") + 
   xlab("") +
   ylab("") +
-  geom_text(aes(x=315, y=-0.012, label = "Pre-symptomatic"),
-                color="black", size=2) +
-  geom_text(aes(x=315, y=0.015, label = "Post-symptomatic"),
-                color="black", size=2) +
-  scale_color_manual(name="Symptom Threshold", values = c("50"= cols[1], 
-                                                          "70"= cols[2], 
-                                                          "90"= cols[3]),
-                     limits=c("50", "70", "90"))  
+  geom_text(aes(x=360, y=-0.03, label = "Pre-symptomatic"),
+                color="black", size=2.25) +
+  geom_text(aes(x=360, y=0.03, label = "Post-symptomatic"),
+                color="black", size=2.25) +
+  scale_color_manual(name="Symptom Threshold", values = c("70"= cols[1], 
+                                                          "90"= cols[2], 
+                                                          "110"= cols[3]),
+                     limits=c("70", "90", "110"))  
 
 plot.varyingr.cap <- plot.varyingr(delays.byr.lowsympthresh.cap,
               delays.byr.medsympthresh.cap, 
               delays.byr.highsympthresh.cap, 
               highlighted_points=delays.byr.medsympthresh.cap
-              [delays.byr.medsympthresh.cap$r==lowrep.cap | 
-                  delays.byr.medsympthresh.cap$r==highrep.cap,],
-              size=6, 
-              ylow=-.05, 
-              yhigh=.01, 
+              [delays.byr.medsympthresh.cap$r==lowrep | 
+                  delays.byr.medsympthresh.cap$r==highrep,],
+              size=8.5, 
+              ylow=-.04, 
+              yhigh=.02, 
               xlow=0, 
-              xhigh=350,
-              legendposx=0.85,
-              legendposy=0.25) + 
+              xhigh=400,
+              legendposx=0.8,
+              legendposy=0.3) + 
   ggtitle("C) Pathogen carrying capacity") +
   xlab("Replication rate (r)") +
   ylab("") +
-  geom_text(aes(x=315, y=-0.002, label = "Pre-symptomatic"),
-                color="black", size=2) +
-  geom_text(aes(x=315, y=0.002, label = "Post-symptomatic"),
-                color="black", size=2) + 
-  scale_color_manual(name="Symptom Threshold", values = c("2"= cols[1], 
-                                                          "3"= cols[2], 
-                                                          "4"= cols[3]))
+  geom_text(aes(x=360, y=-0.003, label = "Pre-symptomatic"),
+                color="black", size=2.25) +
+  geom_text(aes(x=360, y=0.00325, label = "Post-symptomatic"),
+                color="black", size=2.25) + 
+  scale_color_manual(name="Symptom Threshold", values = c("1"= cols[1], 
+                                                          "2"= cols[2], 
+                                                          "3"= cols[3]))
 
   grid.arrange(plot.varyingr.nocap, plot.varyingr.satimm, plot.varyingr.cap,
                nrow=3, 
                left=textGrob("Day of peak viral load \n minus day of symptom onset",
-               gp=gpar(fontsize = 6),
+               gp=gpar(fontsize = 8.5),
                rot=90))
 }
 dev.off()
