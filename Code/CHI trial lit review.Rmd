@@ -1,7 +1,7 @@
 ---
 title: "CHI Trial Literature Review"
 author: "Kayla Zhang, Damie Pak, Megan Greischar"
-date: "2025-10-19"
+date: "2026-02-26"
 output:
   bookdown::pdf_document2:
     toc: no
@@ -9,9 +9,10 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warnings = FALSE)
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ```
 
+Packages we use
 ```{r}
 library(here)
 library(dplyr)
@@ -98,6 +99,8 @@ labels.left <- c("Influenza A", "Rhinovirus")
 
 labels.right <- c("Norovirus", "RSV", "SARS-CoV-2")
 
+tiff('Figure 1.tiff', res=500, height=6.5, width=6.5,
+     unit='in')
 {
   par(bty='n', mfrow=c(1, 2), oma=c(1, 0, 0, 0), mar=c(1.1, 0.5, 0, 0))
   plot.pane(leftpane, labels.left)
@@ -109,6 +112,7 @@ labels.right <- c("Norovirus", "RSV", "SARS-CoV-2")
         adj=0.5, cex=0.8)
   plot.pane(rightpane, labels.right)
 }
+dev.off()
 ```
 
 We also plot the number of studies that matched our inclusion criteria over the
@@ -120,21 +124,12 @@ studies_per_year <- chidata %>% group_by(year) %>%
 spy_model <- lm(log(count) ~ year,
                 data=studies_per_year)
 
-tiff('Studies per year.tiff', res=500, height=3.5, width=3.5, unit='in')
+tiff('Figure S1.tiff', res=500, height=3.5, width=3.5, unit='in')
 
 {
   plot(count ~ year, data=studies_per_year, bty='n', 
        xaxt='n', xlab='', yaxt='n', ylab='',
        las=2)
-  
-  lines(studies_per_year$year,
-        exp(predict(spy_model, 
-                data.frame(year=studies_per_year$year))),
-        col='red')
-  
-  text(2016, 3.5, paste('p value: ', round(summary(spy_model)$coefficients[2, 4],
-                                           4)),
-       col='red')
   
   axis(1, at=seq(min(studies_per_year$year),
                  max(studies_per_year$year),
@@ -157,5 +152,3 @@ tiff('Studies per year.tiff', res=500, height=3.5, width=3.5, unit='in')
 }
 dev.off()
 ```
-
-

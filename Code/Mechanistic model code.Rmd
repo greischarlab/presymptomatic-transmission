@@ -1,7 +1,7 @@
 ---
-title: "Mechanistic Model Usage"
+title: "Mechanistic Models"
 author: "Kayla Zhang, Damie Pak, Megan Greischar"
-date: "2025-10-20
+date: "2026-02-26"
 output:
   bookdown::pdf_document2:
     toc: no
@@ -9,10 +9,10 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ```
 
-Our packages for ODE modeling and plotting:
+Packages we use
 ```{r}
 require(deSolve)
 require(ggplot2)
@@ -164,7 +164,7 @@ delay.calculation <- function(df, symp.thresh) {
 
 The first model we examine is one in which symptoms are dependent only on 
 pathogen load. This is represented by a dotted horizontal red line depicting the 
-threshold for symptoms; if pathogen load falls above that threshold, then symptoms 
+threshold for symptoms; if pathogen load is above that threshold, then symptoms 
 are present. We have defined pre-symptomatic transmission as reaching peak pathogen 
 load before symptom onset. This is a conservative method of estimating 
 pre-symptomatic transmission. 
@@ -293,7 +293,7 @@ data.highreplication.cap$time <- data.highreplication.cap$time * 7
 cex <- 1.25
 cex_labels <- 0.9
 
-tiff('Model schematics.tiff', res=500, width=6.5, height=7.5, unit='in')
+tiff('Figure 6.tiff', res=500, width=6.5, height=7.5, unit='in')
 {
   par(mfrow=c(4, 2), oma=c(0, 2.5, 1.5, 0), mai=c(0.42, 0.32, 0.3, 0.42))
     
@@ -557,7 +557,7 @@ plot.varyingr <- function(delaysbyr1, delaysbyr2, delaysbyr3,
 
 cols <- colorRampPalette(c("deepskyblue", "deepskyblue4"))(3)
 
-tiff('Delays varying r.tiff', res=500, width=3.5, height=5.5, unit='in')
+tiff('Figure S6.tiff', res=500, width=3.5, height=5.5, unit='in')
 {plot.varyingr.nocap <- plot.varyingr(delays.byr.lowsympthresh.nocap, 
               delays.byr.medsympthresh.nocap, 
               delays.byr.highsympthresh.nocap, 
@@ -568,15 +568,15 @@ tiff('Delays varying r.tiff', res=500, width=3.5, height=5.5, unit='in')
               ylow=-.06, 
               yhigh=.005, 
               xlow=0, 
-              xhigh=400,
+              xhigh=420,
               legendposx=0.8,
               legendposy=0.3) + 
   ggtitle("A) Base model") + 
   xlab("") +
   ylab("") +
-  geom_text(aes(x=360, y=-0.003, label = "Pre-symptomatic"),
+  geom_text(aes(x=380, y=-0.003, label = "Pre-symptomatic"),
                 color="black", size=2.25) +
-  geom_text(aes(x=360, y=0.0035, label = "Post-symptomatic"),
+  geom_text(aes(x=380, y=0.0035, label = "Post-symptomatic"),
                 color="black", size=2.25) +
   scale_color_manual(name="Symptom Threshold", values = c("10"= cols[1], 
                                                           "15"= cols[2], 
@@ -593,15 +593,15 @@ plot.varyingr.satimm <- plot.varyingr(delays.byr.lowsympthresh.satimm,
               ylow=-.45, 
               yhigh=0.15, 
               xlow=0, 
-              xhigh=400,
+              xhigh=420,
               legendposx=0.8,
               legendposy=0.3) + 
   ggtitle("B) Immune inhibition of pathogen replication") + 
   xlab("") +
   ylab("") +
-  geom_text(aes(x=360, y=-0.03, label = "Pre-symptomatic"),
+  geom_text(aes(x=380, y=-0.03, label = "Pre-symptomatic"),
                 color="black", size=2.25) +
-  geom_text(aes(x=360, y=0.03, label = "Post-symptomatic"),
+  geom_text(aes(x=380, y=0.03, label = "Post-symptomatic"),
                 color="black", size=2.25) +
   scale_color_manual(name="Symptom Threshold", values = c("70"= cols[1], 
                                                           "90"= cols[2], 
@@ -618,15 +618,15 @@ plot.varyingr.cap <- plot.varyingr(delays.byr.lowsympthresh.cap,
               ylow=-.04, 
               yhigh=.02, 
               xlow=0, 
-              xhigh=400,
+              xhigh=420,
               legendposx=0.8,
               legendposy=0.3) + 
   ggtitle("C) Pathogen carrying capacity") +
   xlab("Replication rate (r)") +
   ylab("") +
-  geom_text(aes(x=360, y=-0.003, label = "Pre-symptomatic"),
+  geom_text(aes(x=380, y=-0.003, label = "Pre-symptomatic"),
                 color="black", size=2.25) +
-  geom_text(aes(x=360, y=0.00325, label = "Post-symptomatic"),
+  geom_text(aes(x=380, y=0.00325, label = "Post-symptomatic"),
                 color="black", size=2.25) + 
   scale_color_manual(name="Symptom Threshold", values = c("1"= cols[1], 
                                                           "2"= cols[2], 
@@ -666,6 +666,9 @@ peaktimes.satimm <- get.peaktimes.df(varyingr.satimm, 90)
 cex <- 1.25
 cex.mtext <- 0.9
 
+tiff('Figure S8.tiff', res=500, unit='in',
+height=6.5, width=3.5)
+
 {
   par(mfrow=c(3, 1), mai=c(0.52, 0.62, 0.42, 0.1))
   
@@ -698,11 +701,16 @@ cex.mtext <- 0.9
   
   mtext("Replication rate (r)", side=1, line=2.5, cex=cex.mtext)
 }
+
+dev.off()
 ```
 
 We also compare the distance between symptom onset and peak pathogen load 
 at different replication rates.
 ```{r, fig.height = 6.5, fig.width = 3.5}
+tiff('Figure S7.tiff', res=500, unit='in',
+height=6.5, width=3.5)
+
 {
   par(mfrow=c(3, 1), mai=c(0.52, 0.62, 0.42, 0.1))
   
@@ -730,10 +738,12 @@ at different replication rates.
   mtext("C) Pathogen carrying capacity", side=3, line=1.5, cex=cex.mtext)
   
   legend(90, 0.15, legend=c('Symptom onset',
-                             'Pathogen load'), 
+                             'Peak pathogen load'), 
          lty=c(2, 1), col=c("red", "black"), bty="n")
   
   mtext("Replication rate (r)", side=1, line=2.5, cex=cex.mtext)
 }
+
+dev.off()
 
 ```
