@@ -236,6 +236,9 @@ end.point <- function(data) {
   return(endPt)
 }
 
+noroParticipants <- unique(noro.FShedData$ID)
+sarsParticipants <- unique(sars.TShedData$ID)
+
 noro.endpoints <- do.call(rbind, 
                          lapply(noroParticipants, 
                                 function(x) data.frame(x, 
