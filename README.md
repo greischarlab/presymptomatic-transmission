@@ -18,8 +18,8 @@ the predicted values of the linear regressions to assess statistical uncertainty
 
 Data was cleaned separately and loaded in directly at the beginning of the code. For the norovirus data, 
 this involved simple reformatting of the data from the noroData.rds file found in the supplementary material of 
-Ge *et al*., 2023, as well as averaging viral shedding values for time points where multiple samples are 
-reported to be taken. For the SARS-CoV-2 data, this involved visually data mining the shedding and 
+Ge *et al*., 2023, as well as averaging viral shedding values for time points where multiple samples for
+an individual are reported to be taken. For the SARS-CoV-2 data, this involved visually data mining the shedding and 
 symptom onset data from Figure 2 in Zhou *et al*., 2023 using the metaDigitise package.
 
 # Mechanistic within-host model
