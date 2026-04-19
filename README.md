@@ -9,11 +9,17 @@ our literature review of controlled human infection trials.
 
 # Identifying correlates of pre-symptomatic transmission
 
-'Fitting statistical model to human infection data.Rmd' contains the code for all the cleaning and analysis of 
+'Fitting statistical model to human infection data.Rmd' contains the code for the analysis of 
 the data from Ge *et al*., 2023 and Zhou *et al*., 2023. This includes fitting the statistical model we use
-to the individual shedding data, running linear regressions assessing the correlations between the statistical 
-model parameters and the duration of pre-symptomatic transmission across all the participants, and bootstrapping 
-the predicted values of the linear regressions to assess statistical uncertainty.
+to individual viral shedding data, calculating the duration and amplitude of pre-symptomatic transmission for
+each person, running linear regressions assessing e.g. the correlation between viral population growth rate 
+and the duration of pre-symptomatic transmission across all the participants, and bootstrapping 
+the predicted values of the linear regressions to assess statistical uncertainty. 
+
+Data was cleaned separately and loaded in directly at the beginning of the code. For the norovirus data, 
+this involved simple reformatting from the noroData.rds file found in the supplementary material of 
+Ge *et al*., 2023. For the SARS-CoV-2 data, this involved visually data mining the shedding and symptom 
+onset data from Figure 2 in Zhou *et al*., 2023 using the metaDigitise package.
 
 # Mechanistic within-host model
 
